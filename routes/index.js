@@ -1,5 +1,4 @@
 const router = require('koa-router')()
-const repository = require('../service/repository');
 
 router.get('/', async (ctx, next) => {
   await ctx.render('index');
