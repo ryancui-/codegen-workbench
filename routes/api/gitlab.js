@@ -19,23 +19,26 @@ router.get('/listProjects', async (ctx, next) => {
 /**
  * 列出项目的顶级目录树
  */
-router.get('listProjectTree', async (ctx, next) => {
+router.get('/listProjectTree', async (ctx, next) => {
   ctx.body = await listProjectTree()
 })
 
 /**
  * 代码生成
  */
-router.post('codegen', async (ctx, next) => {
+router.post('/codegen', async (ctx, next) => {
+  const config = ctx.request.body
+  console.log(config)
+
   const codegenDir = ''
   const selectedBase = ''
   const projectId = ''
   const defaultBranch = ''
 
   try {
-    const actions = await generateActions(path.join(codegenDir, 'src'), selectedBase)
+    // const actions = await generateActions(path.join(codegenDir, 'src'), selectedBase)
 
-    await makeCommit(projectId, defaultBranch, 'Codegen By workbench', actions)
+    // await makeCommit(projectId, defaultBranch, 'Codegen By workbench', actions)
 
     ctx.body = {
       success: true

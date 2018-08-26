@@ -22,7 +22,21 @@ Vue.component('codegen', {
   },
   methods: {
     submit() {
-      console.log(this.config)
+      $('body').loading('start')
+      $.ajax({
+        url: '/api/codegen',
+        data: this.config,
+        method: 'POST',
+        dataType: 'json',
+        success(data) {
+          $('body').loading('stop')
+          if (data.success) {
+            alert('成功')
+          } else {
+            alert('失败' + data.msg)
+          }
+        }
+      })
     },
     selectProject(project) {
       this.selectedProject = project
@@ -39,10 +53,6 @@ Vue.component('codegen', {
 
       this.config.mergeDir = this.selectedDir.path
     },
-    /**
-     * 加载项目根路径
-     * @param projectId
-     */
     getProjectTopDir(projectId) {
       const that = this
 
@@ -65,11 +75,14 @@ Vue.component('codegen', {
   },
   created() {
     const that = this
+
+    $('body').loading('start')
     $.ajax({
       url: 'http://mock.366cs.cn/mock/25/projectList',
       dataType: 'json',
       success(data) {
         that.projectList = data.data
+        $('body').loading('stop')
       }
     })
   }
