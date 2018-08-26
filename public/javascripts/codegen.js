@@ -1,46 +1,5 @@
 Vue.component('codegen', {
-  template: `
-    <div class="card" style="margin-top: 10px;">
-      <div class="card-header">
-        代码生成
-      </div>
-      <div class="card-body">
-        <form action="">
-          <div class="row">
-            <div class="col-3">
-              <div class="form-group">
-                <label for="jdbcUrlId">数据库连接</label>
-                <input type="text" class="form-control" id="jdbcUrlId" 
-                       placeholder="数据库连接" v-model="config.jdbcUrl">
-              </div>
-            </div>
-            <div class="col-3">
-              <div class="form-group">
-                <label for="jdbcDriverId">数据库驱动</label>
-                <input type="text" class="form-control" id="jdbcDriverId" 
-                       placeholder="数据库驱动" v-model="config.jdbcDriver">
-              </div>
-            </div>
-            <div class="col-3">
-              <div class="form-group">
-                <label for="jdbcUsernameId">数据库用户</label>
-                <input type="text" class="form-control" id="jdbcUsernameId" 
-                       placeholder="数据库用户" v-model="config.jdbcUsername">
-              </div>
-            </div>
-            <div class="col-3">
-              <div class="form-group">
-                <label for="jdbcPasswordId">数据库密码</label>
-                <input type="text" class="form-control" id="jdbcPasswordId" 
-                       placeholder="数据库密码" v-model="config.jdbcPassword">
-              </div>
-            </div>
-          </div>
-          <button type="submit" onclick="return false;" 
-                  @click="submit" class="btn btn-primary">生成代码</button>
-        </form>
-      </div>
-    </div>`,
+  template: '#codegenTpl',
   data() {
     return {
       config: {
@@ -54,12 +13,64 @@ Vue.component('codegen', {
         projectId: null,
         branchName: '',
         mergeDir: ''
-      }
+      },
+      selectedProject: null,
+      selectedDir: null,
+      projectList: [],
+      topDirList: []
     }
   },
   methods: {
     submit() {
       console.log(this.config)
+    },
+    selectProject(project) {
+      this.selectedProject = project
+
+      // 加载对应的根目录列表
+      this.getProjectTopDir(this.selectedProject.id)
+
+      this.config.projectId = this.selectedProject.id
+      this.config.branchName = this.selectedProject.default_branch
+      this.config.mergeDir = ''
+    },
+    selectDir(dir) {
+      this.selectedDir = dir
+
+      this.config.mergeDir = this.selectedDir.path
+    },
+    /**
+     * 加载项目根路径
+     * @param projectId
+     */
+    getProjectTopDir(projectId) {
+      const that = this
+
+      $.ajax({
+        url: 'http://mock.366cs.cn/mock/25/listProjectTree',
+        dataType: 'json',
+        success(data) {
+          that.topDirList = data.data.filter(i => i.type === 'tree')
+        }
+      })
     }
+  },
+  computed: {
+    canSubmit() {
+      return this.config.jdbcUrl && this.config.jdbcDriver
+        && this.config.jdbcUsername && this.config.jdbcPassword
+        && this.config.tableName && this.config.moduleName && this.config.beanName
+        && this.config.projectId && this.config.branchName && this.config.mergeDir
+    }
+  },
+  created() {
+    const that = this
+    $.ajax({
+      url: 'http://mock.366cs.cn/mock/25/projectList',
+      dataType: 'json',
+      success(data) {
+        that.projectList = data.data
+      }
+    })
   }
 })

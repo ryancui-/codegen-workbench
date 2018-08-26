@@ -5,9 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>代码生成平台</title>
 
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
-        crossorigin="anonymous">
+  <link href="https://cdn.bootcss.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="stylesheets/jquery.loading.css">
   <link rel="stylesheet" href="stylesheets/style.css">
 </head>
 <body>
@@ -17,17 +16,126 @@
   <codegen></codegen>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
-        crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
-        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
-        crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-        crossorigin="anonymous"></script>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+
+<!-- 说明组件 -->
+<script type="x-template" id="description">
+  <div class="card" style="margin-top: 10px;">
+    <div class="card-header">
+      使用说明
+    </div>
+    <div class="card-body">
+      <p v-for="(line, index) in lines">
+        {{index+1}}. {{line}}
+      </p>
+    </div>
+  </div>
+</script>
+
+<!-- 代码生成组件 -->
+<script type="x-template" id="codegenTpl">
+  <div class="card" style="margin-top: 10px;">
+    <div class="card-header">
+      代码生成
+    </div>
+    <div class="card-body">
+      <form action="">
+        <div class="row">
+          <div class="col-3">
+            <div class="form-group">
+              <label for="jdbcUrlId">数据库连接</label>
+              <input type="text" class="form-control" id="jdbcUrlId"
+                     placeholder="数据库连接" v-model="config.jdbcUrl">
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="form-group">
+              <label for="jdbcDriverId">数据库驱动</label>
+              <input type="text" class="form-control" id="jdbcDriverId"
+                     placeholder="数据库驱动" v-model="config.jdbcDriver">
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="form-group">
+              <label for="jdbcUsernameId">数据库用户</label>
+              <input type="text" class="form-control" id="jdbcUsernameId"
+                     placeholder="数据库用户" v-model="config.jdbcUsername">
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="form-group">
+              <label for="jdbcPasswordId">数据库密码</label>
+              <input type="text" class="form-control" id="jdbcPasswordId"
+                     placeholder="数据库密码" v-model="config.jdbcPassword">
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-3">
+            <div class="form-group">
+              <label for="tableNameId">数据库表名</label>
+              <input type="text" class="form-control" id="tableNameId"
+                     placeholder="数据库表名" v-model="config.tableName">
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="form-group">
+              <label for="moduleNameId">模块名</label>
+              <input type="text" class="form-control" id="moduleNameId"
+                     placeholder="模块名" v-model="config.moduleName">
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="form-group">
+              <label for="beanNameId">JavaBean名</label>
+              <input type="text" class="form-control" id="beanNameId"
+                     placeholder="JavaBean名" v-model="config.beanName">
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-6">
+            <div class="form-group">
+              <label for="selectedProjectId">要提交的项目</label>
+              <div class="list-group" style="height: 300px; overflow: auto;">
+                <a href="#" onclick="return false" class="list-group-item list-group-item-action"
+                   v-for="project in projectList" :class="{active: project === selectedProject}"
+                   @click="selectProject(project)">
+                  {{project.name_with_namespace}}
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group">
+              <label for="mergeDirId">要合并的目录</label>
+              <div class="list-group" style="height: 300px; overflow: auto;">
+                <a href="#" onclick="return false" class="list-group-item list-group-item-action"
+                   v-for="dir in topDirList" :class="{active: dir === selectedDir}"
+                   @click="selectDir(dir)">
+                  {{dir.path}}
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" onclick="return false;"
+                @click="submit" class="btn btn-primary"
+                :disabled="!canSubmit">
+          生成代码
+        </button>
+      </form>
+    </div>
+  </div>
+</script>
 
 <script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
+<script src="javascripts/jquery.loading.js"></script>
+
 <script src="javascripts/codegen.js"></script>
 <script src="javascripts/description.js"></script>
 <script src="javascripts/index.js"></script>
