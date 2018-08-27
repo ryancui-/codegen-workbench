@@ -1,3 +1,6 @@
+const projectUrl = '/api/listProjects'
+const treeUrl = '/api/listProjectTree'
+
 Vue.component('codegen', {
   template: '#codegenTpl',
   data() {
@@ -56,11 +59,13 @@ Vue.component('codegen', {
     getProjectTopDir(projectId) {
       const that = this
 
+      $('body').loading('start')
       $.ajax({
-        url: 'http://mock.366cs.cn/mock/25/listProjectTree',
+        url: treeUrl + '/' + projectId,
         dataType: 'json',
         success(data) {
-          that.topDirList = data.data.filter(i => i.type === 'tree')
+          that.topDirList = data.filter(i => i.type === 'tree')
+          $('body').loading('stop')
         }
       })
     }
@@ -78,10 +83,10 @@ Vue.component('codegen', {
 
     $('body').loading('start')
     $.ajax({
-      url: 'http://mock.366cs.cn/mock/25/projectList',
+      url: projectUrl,
       dataType: 'json',
       success(data) {
-        that.projectList = data.data
+        that.projectList = data
         $('body').loading('stop')
       }
     })

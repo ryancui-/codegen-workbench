@@ -6,6 +6,7 @@ const {
   makeCommit
 } = require('../../service/gitlab_api')
 const {
+  execCodegen,
   generateActions
 } = require('../../service/file')
 
@@ -19,8 +20,9 @@ router.get('/listProjects', async (ctx, next) => {
 /**
  * 列出项目的顶级目录树
  */
-router.get('/listProjectTree', async (ctx, next) => {
-  ctx.body = await listProjectTree()
+router.get('/listProjectTree/:id', async (ctx, next) => {
+  const {data} = await listProjectTree(ctx.params.id)
+  ctx.body = data
 })
 
 /**

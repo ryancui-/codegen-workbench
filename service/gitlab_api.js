@@ -9,27 +9,26 @@ const axios = require('axios')
  * @return {*}
  */
 const request = (url, method, data = null) => {
-  // 处理分页
-  const search = []
-  if (data.page) {
-    search.push(['page', data.page])
-  }
-  if (data.per_page) {
-    search.push(['per_page', data.per_page])
-  }
-
-  const searchStr = search.length === 0
-    ? ''
-    : `?${search.map(s => s.join('=')).join('&')}`
-
-  return axios({
-    method,
-    url: `${config.gitlab_url}${url}${searchStr}`,
-    data,
-    headers: {
-      'Private-Token': config.gitlab_token
-    }
-  })
+  return method.toUpperCase() === 'GET' ?
+    axios({
+      method,
+      url: `${config.gitlab_url}${url}`,
+      params: data,
+      headers: {
+        'Private-Token': config.gitlab_token
+      }
+    }) : axios({
+      method,
+      url: `${config.gitlab_url}${url}`,
+      params: {
+        page: data.page,
+        per_page: data.per_page
+      },
+      data,
+      headers: {
+        'Private-Token': config.gitlab_token
+      }
+    })
 }
 
 /**
@@ -44,11 +43,11 @@ const listProjects = async () => {
   while (true) {
     const {headers, data} = await request('/projects', 'GET', {
       page,
-      per_page,
-      simple: true
+      per_page
     })
 
     projects.push(...data)
+    console.log(headers)
     if (page == headers['x-total-pages']) {
       break
     } else {

@@ -1,5 +1,7 @@
 const fs = require('fs')
 const path = require('path')
+const child_process = require('child_process')
+const config = require('../config')
 
 /**
  * 读取文件并添加 Action
@@ -42,6 +44,19 @@ const generateActions = (rootDir, dirPrefix) => new Promise((resolve, reject) =>
   }
 })
 
+/**
+ * 执行代码生成，同步
+ * @param codeDir
+ */
+const execCodegen = (codeDir) => new Promise((resolve, reject) => {
+  child_process.exec('sh /Users/ryancui/codegen-test/sleep.sh', {
+    shell: true
+  }, (err) => {
+    resolve()
+  })
+})
+
 module.exports = {
+  execCodegen,
   generateActions
 }
