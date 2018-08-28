@@ -1,3 +1,25 @@
 body {
   padding: 0 50px;
 }
+
+.template-edit {
+  display: flex;
+  position: relative;
+}
+
+.ztree {
+  margin-right: 10px;
+  height: 600px;
+  width: 200px;
+  overflow: auto;
+  padding: 10px;
+}
+
+#editor {
+  height: 600px;
+  flex-grow: 1;
+}
+
+#editor > .CodeMirror {
+  height: 100%;
+}
