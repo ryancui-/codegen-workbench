@@ -1,4 +1,5 @@
 module.exports = {
   gitlab_token: '',
-  gitlab_url: ''
+  gitlab_url: '',
+  codegen_base: ''
 };

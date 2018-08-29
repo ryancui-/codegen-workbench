@@ -95,6 +95,13 @@
         <div class="row">
           <div class="col-3">
             <div class="form-group">
+              <label for="jdbcDatabaseId">数据库名</label>
+              <input type="text" class="form-control" id="jdbcDatabaseId"
+                     placeholder="数据库名" v-model="config.jdbcDatabase">
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="form-group">
               <label for="tableNameId">数据库表名</label>
               <input type="text" class="form-control" id="tableNameId"
                      placeholder="数据库表名" v-model="config.tableName">

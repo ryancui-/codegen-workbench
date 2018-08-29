@@ -44,12 +44,21 @@ const generateActions = (rootDir, dirPrefix) => new Promise((resolve, reject) =>
   }
 })
 
+const initCodegenPath = (codegenPath) => new Promise((resolve, reject) => {
+  fs.mkdir(codegenPath, 0777, err => {
+    if (err) {
+      reject(new Error('新建代码生成目录失败'))
+    }
+    resolve()
+  })
+})
+
 /**
  * 执行代码生成，同步
- * @param codeDir
+ * @param codegenPath
  */
-const execCodegen = (codeDir) => new Promise((resolve, reject) => {
-  child_process.exec('sh /Users/ryancui/codegen-test/sleep.sh', {
+const execCodegen = (command, codegenPath) => new Promise((resolve, reject) => {
+  child_process.exec(command, {
     shell: true
   }, (err) => {
     resolve()
@@ -57,6 +66,7 @@ const execCodegen = (codeDir) => new Promise((resolve, reject) => {
 })
 
 module.exports = {
+  initCodegenPath,
   execCodegen,
   generateActions
 }

@@ -1,11 +1,14 @@
 const router = require('koa-router')()
 const path = require('path')
+const fs = require('fs')
+const config = require('../../config')
 const {
   listProjects,
   listProjectTree,
   makeCommit
 } = require('../../service/gitlab_api')
 const {
+  initCodegenPath,
   execCodegen,
   generateActions
 } = require('../../service/file')
@@ -29,17 +32,37 @@ router.get('/listProjectTree/:id', async (ctx, next) => {
  * 代码生成
  */
 router.post('/codegen', async (ctx, next) => {
-  const config = ctx.request.body
-  console.log(config)
-
-  const codegenDir = ''
-  const selectedBase = ''
-  const projectId = ''
-  const defaultBranch = ''
+  const params = ctx.request.body
+  console.log(params)
 
   try {
+    const codegenPath = path.join(config.codegen_base, `gen_${Date.now()}`)
+
+    // 生成临时路径
+    await initCodegenPath(codegenPath)
+
+    const execCommand = `
+      java -jar ${path.join(config.codegen_base, 'service-code/service-code-generation.jar')} 
+      -out ${codegenPath} 
+      -module ${params.moduleName} 
+      -clazz ${params.beanName} 
+      -table ${params.tableName} 
+      -package com.gzkit.backend 
+      -url "${params.jdbcUrl}" 
+      -driver ${params.jdbcDriver} 
+      -catalog ${params.jdbcDatabase} 
+      -username ${params.jdbcUsername} 
+      -password ${params.jdbcPassword} 
+      -template ${path.join(config.codegen_base, 'templates/platform-service-template')}`
+
+    // 生成代码
+    await execCodegen(execCommand, codegenPath)
+
+
+    // 整理上传 actions 数组
     // const actions = await generateActions(path.join(codegenDir, 'src'), selectedBase)
 
+    // 提交commit
     // await makeCommit(projectId, defaultBranch, 'Codegen By workbench', actions)
 
     ctx.body = {

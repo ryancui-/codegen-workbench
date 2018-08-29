@@ -6,11 +6,12 @@ Vue.component('codegen', {
   data() {
     return {
       config: {
-        jdbcUrl: '',
+        jdbcUrl: 'jdbc:mysql://localhost:3306/dev?useSSL=false',
         jdbcDriver: 'com.mysql.jdbc.Driver',
-        jdbcUsername: '',
-        jdbcPassword: '',
-        tableName: '',
+        jdbcUsername: 'root',
+        jdbcPassword: 'qwerty',
+        jdbcDatabase: 'dev',
+        tableName: 't_user',
         moduleName: '',
         beanName: '',
         projectId: null,
