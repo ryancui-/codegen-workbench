@@ -3,12 +3,16 @@ const path = require('path')
 const fs = require('fs')
 const config = require('../../config')
 const {
+  removeDir,
+  promisify
+} = require('../../utils/fs_utils')
+
+const {
   listProjects,
   listProjectTree,
   makeCommit
 } = require('../../service/gitlab_api')
 const {
-  initCodegenPath,
   execCodegen,
   generateActions
 } = require('../../service/file')
@@ -33,48 +37,59 @@ router.get('/listProjectTree/:id', async (ctx, next) => {
  */
 router.post('/codegen', async (ctx, next) => {
   const params = ctx.request.body
-  console.log(params)
+  const serviceCodeConfig = config.codegens.find(gen => gen.id === 'service-code')
+  if (!serviceCodeConfig) {
+    ctx.body = {
+      success: false,
+      msg: '没有对应代码生成器配置'
+    }
+    return
+  }
+
+  const codegenPath = path.join(config.codegen_base, `gen_${Date.now()}`)
 
   try {
-    const codegenPath = path.join(config.codegen_base, `gen_${Date.now()}`)
-
     // 生成临时路径
-    await initCodegenPath(codegenPath)
+    await promisify(fs.mkdir)(codegenPath, 0777)
 
-    const execCommand = `
-      java -jar ${path.join(config.codegen_base, 'service-code/service-code-generation.jar')} 
-      -out ${codegenPath} 
-      -module ${params.moduleName} 
-      -clazz ${params.beanName} 
-      -table ${params.tableName} 
-      -package com.gzkit.backend 
-      -url "${params.jdbcUrl}" 
-      -driver ${params.jdbcDriver} 
-      -catalog ${params.jdbcDatabase} 
-      -username ${params.jdbcUsername} 
-      -password ${params.jdbcPassword} 
-      -template ${path.join(config.codegen_base, 'templates/platform-service-template')}`
+    const commandParams = []
+    commandParams.push(['-out', codegenPath])
+    commandParams.push(['-module', params.moduleName])
+    commandParams.push(['-clazz', params.beanName])
+    commandParams.push(['-table', params.tableName])
+    commandParams.push(['-package', 'com.gzkit.backend'])
+    commandParams.push(['-url', `"${params.jdbcUrl}"`])
+    commandParams.push(['-driver', params.jdbcDriver])
+    commandParams.push(['-catalog', params.jdbcDatabase])
+    commandParams.push(['-username', params.jdbcUsername])
+    commandParams.push(['-password', params.jdbcPassword])
+    commandParams.push(['-template', path.join(config.codegen_base, serviceCodeConfig.template_path)])
+
+    const execCommand = `java -jar ${path.join(config.codegen_base, serviceCodeConfig.executable_path)} ${commandParams.map(c => c.join(' ')).join(' ')}`
 
     // 生成代码
     await execCodegen(execCommand, codegenPath)
 
-
     // 整理上传 actions 数组
-    // const actions = await generateActions(path.join(codegenDir, 'src'), selectedBase)
+    const actions = await generateActions(path.join(codegenPath, 'src'), params.mergeDir)
 
     // 提交commit
-    // await makeCommit(projectId, defaultBranch, 'Codegen By workbench', actions)
+    const commitMsg = `codegen: add ${params.beanName} files`
+    await makeCommit(params.projectId, params.branchName, commitMsg, actions)
 
     ctx.body = {
       success: true
     }
   } catch (e) {
+    console.log(e)
     ctx.body = {
       success: false,
       msg: e.message || '内部服务器错误'
     }
+  } finally {
+    // 删除临时目录
+    await removeDir(codegenPath)
   }
-
 })
 
 module.exports = router

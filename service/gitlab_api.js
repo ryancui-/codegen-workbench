@@ -47,7 +47,6 @@ const listProjects = async () => {
     })
 
     projects.push(...data)
-    console.log(headers)
     if (page == headers['x-total-pages']) {
       break
     } else {

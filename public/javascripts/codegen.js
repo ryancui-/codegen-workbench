@@ -34,11 +34,13 @@ Vue.component('codegen', {
         dataType: 'json',
         success(data) {
           $('body').loading('stop')
-          if (data.success) {
-            alert('成功')
-          } else {
-            alert('失败' + data.msg)
-          }
+          setTimeout(() => {
+            if (data.success) {
+              alert('生成成功')
+            } else {
+              alert('生成失败\n' + data.msg)
+            }
+          })
         }
       })
     },

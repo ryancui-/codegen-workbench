@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>代码生成平台</title>
+  <title>模板代码生成平台</title>
 
   <link href="https://cdn.bootcss.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.bootcss.com/zTree.v3/3.5.33/css/zTreeStyle/zTreeStyle.min.css" rel="stylesheet">
@@ -19,18 +19,7 @@
 
   <codegen></codegen>
 
-  <div class="card" style="margin-top: 10px;">
-    <div class="card-header">
-      模板编辑
-    </div>
-    <div class="card-body">
-      <div class="template-edit">
-        <ul id="fileTree" class="ztree"></ul>
-        <div id="editor"></div>
-      </div>
-    </div>
-  </div>
-
+  <codeedit></codeedit>
 </div>
 
 <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
@@ -160,9 +149,25 @@
   </div>
 </script>
 
+<!-- 代码模板组件 -->
+<script type="x-template" id="codeEdit">
+  <div class="card" style="margin-top: 10px;">
+    <div class="card-header">
+      模板编辑（未完成）
+    </div>
+    <div class="card-body">
+      <div class="template-edit">
+        <ul id="fileTree" class="ztree"></ul>
+        <div id="editor"></div>
+      </div>
+    </div>
+  </div>
+</script>
+
 <script src="https://cdn.bootcss.com/vue/2.5.16/vue.min.js"></script>
 <script src="javascripts/jquery.loading.js"></script>
 
+<script src="javascripts/codeedit.js"></script>
 <script src="javascripts/codegen.js"></script>
 <script src="javascripts/description.js"></script>
 <script src="javascripts/index.js"></script>

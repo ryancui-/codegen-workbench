@@ -2,19 +2,22 @@ const fs = require('fs')
 const path = require('path')
 const child_process = require('child_process')
 const config = require('../config')
+const {promisify} = require('../utils/fs_utils')
 
 /**
  * 读取文件并添加 Action
  * @param dir
  * @param actions
  */
-const readDirectory = (dir, actions, rootDir, dirPrefix) => {
-  const files = fs.readdirSync(dir)
-  files.forEach(filename => {
+const readDirectory = async (dir, actions, rootDir, dirPrefix) => {
+  const files = await promisify(fs.readdir)(dir)
+
+  for (let i = 0; i < files.length; i++) {
+    const filename = files[i]
     const fullpath = path.join(dir, filename)
-    const stats = fs.statSync(fullpath)
+    const stats = await promisify(fs.stat)(fullpath)
     if (stats.isFile()) {
-      const fileContent = fs.readFileSync(fullpath, {
+      const fileContent = await promisify(fs.readFile)(fullpath, {
         encoding: 'utf-8'
       })
 
@@ -25,33 +28,25 @@ const readDirectory = (dir, actions, rootDir, dirPrefix) => {
       })
 
     } else if (stats.isDirectory()) {
-      readDirectory(fullpath, actions, rootDir, dirPrefix)
+      await readDirectory(fullpath, actions, rootDir, dirPrefix)
     }
-  })
+  }
 }
 
 /**
  * 传入根目录，构造提交 Gitlab Commit 的 Actions 数组
  */
-const generateActions = (rootDir, dirPrefix) => new Promise((resolve, reject) => {
-  const rootStats = fs.statSync(rootDir)
+const generateActions = async (rootDir, dirPrefix) => {
+  const rootStats = await promisify(fs.stat)(rootDir)
+
   if (rootStats.isFile()) {
-    reject('Must be directory')
+    throw new Error('Must be directory')
   } else {
     const actions = []
-    readDirectory(path.resolve(rootDir), actions, path.join(rootDir, '..'), dirPrefix)
-    resolve(actions)
+    await readDirectory(path.resolve(rootDir), actions, path.join(rootDir, '..'), dirPrefix)
+    return actions
   }
-})
-
-const initCodegenPath = (codegenPath) => new Promise((resolve, reject) => {
-  fs.mkdir(codegenPath, 0777, err => {
-    if (err) {
-      reject(new Error('新建代码生成目录失败'))
-    }
-    resolve()
-  })
-})
+}
 
 /**
  * 执行代码生成，同步
@@ -66,7 +61,6 @@ const execCodegen = (command, codegenPath) => new Promise((resolve, reject) => {
 })
 
 module.exports = {
-  initCodegenPath,
   execCodegen,
   generateActions
 }
