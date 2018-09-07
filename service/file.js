@@ -33,6 +33,37 @@ const readDirectory = async (dir, actions, rootDir, dirPrefix) => {
   }
 }
 
+const buildDirTree = async (dir) => {
+  const files = await promisify(fs.readdir)(dir)
+
+  const result = []
+
+  for (let i = 0; i < files.length; i++) {
+    const filename = files[i]
+    const fullpath = path.join(dir, filename)
+    const stats = await promisify(fs.stat)(fullpath)
+
+    // 忽略以 . 开头的隐藏文件
+    if (stats.isFile() && !filename.startsWith('.')) {
+      result.push({
+        type: 'file',
+        filename,
+        path: path.relative(config.codegen_base, fullpath)
+      })
+    } else if (stats.isDirectory()) {
+      const children = await buildDirTree(fullpath)
+      result.push({
+        type: 'directory',
+        filename,
+        path: path.relative(config.codegen_base, fullpath),
+        children
+      })
+    }
+  }
+
+  return result
+}
+
 /**
  * 传入根目录，构造提交 Gitlab Commit 的 Actions 数组
  */
@@ -49,6 +80,22 @@ const generateActions = async (rootDir, dirPrefix) => {
 }
 
 /**
+ * 传入根目录，构造文档树结构对象
+ *
+ * @param rootDir
+ * @return {Promise<*>}
+ */
+const generateDirTree = async (rootDir) => {
+  const rootStats = await promisify(fs.stat)(rootDir)
+
+  if (rootStats.isFile()) {
+    throw new Error('Must be directory')
+  } else {
+    return await buildDirTree(path.resolve(rootDir))
+  }
+}
+
+/**
  * 执行代码生成，同步
  * @param codegenPath
  */
@@ -60,7 +107,33 @@ const execCodegen = (command, codegenPath) => new Promise((resolve, reject) => {
   })
 })
 
+/**
+ * 返回文件内容
+ *
+ * @param filepath
+ * @return {Promise<*>}
+ */
+const readFile = async (filepath) => {
+  return await promisify(fs.readFile)(path.join(config.codegen_base, filepath), {
+    encoding: 'utf-8'
+  })
+}
+
+/**
+ * 写入文件内容
+ *
+ * @param filepath
+ * @param content
+ * @return {Promise<void>}
+ */
+const writeFile = async (filepath, content) => {
+  await promisify(fs.writeFile)(path.join(config.codegen_base, filepath), content)
+}
+
 module.exports = {
   execCodegen,
-  generateActions
+  generateActions,
+  generateDirTree,
+  readFile,
+  writeFile
 }

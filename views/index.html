@@ -27,6 +27,8 @@
 <script src="https://cdn.bootcss.com/zTree.v3/3.5.33/js/jquery.ztree.all.min.js"></script>
 
 <script src="codemirror/lib/codemirror.js"></script>
+<script src="codemirror/mode/xml/xml.js"></script>
+<script src="codemirror/mode/clike/clike.js"></script>
 
 <!-- 说明组件 -->
 <script type="x-template" id="description">
@@ -153,12 +155,22 @@
 <script type="x-template" id="codeEdit">
   <div class="card" style="margin-top: 10px;">
     <div class="card-header">
-      模板编辑（未完成）
+      模板编辑
     </div>
     <div class="card-body">
+      <div class="button-panel" style="margin-bottom: 10px;">
+        <button type="button" onclick="return false;"
+                @click="saveCode" class="btn btn-primary">
+          保存
+        </button>
+      </div>
       <div class="template-edit">
-        <ul id="fileTree" class="ztree"></ul>
-        <div id="editor"></div>
+        <div class="dir-tree">
+          <ul id="fileTree" class="ztree"></ul>
+        </div>
+        <div class="editor-wrapper">
+          <div id="editor"></div>
+        </div>
       </div>
     </div>
   </div>

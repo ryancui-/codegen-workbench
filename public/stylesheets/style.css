@@ -8,17 +8,24 @@ body {
   border: 1px dashed rgba(0, 0, 0, 0.15);
 }
 
-.ztree {
+.dir-tree {
   margin-right: 10px;
   height: 600px;
-  width: 200px;
-  overflow: auto;
   padding: 10px;
 }
 
-#editor {
+.ztree {
+  width: 100%;
+}
+
+.editor-wrapper {
   height: 600px;
   flex-grow: 1;
+}
+
+#editor {
+  width: 100%;
+  height: 100%;
 }
 
 #editor > .CodeMirror {
